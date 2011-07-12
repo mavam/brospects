@@ -20,7 +20,7 @@ export
     };
 
     # A chat message
-    type chat_message: record
+    type ChatMessage: record
     {
         timestamp: string;  # Message timestamp.
         from: string;       # Name of the sender
@@ -28,7 +28,7 @@ export
         text: string;       # The actual message.
     };
 
-    type chat_session: record
+    type ChatSession: record
     {
         start: time;        # Unix timestamp of first message.
         end: time;          # Unix timestamp of last message.
@@ -36,7 +36,7 @@ export
     };
 }
 
-type http_body: record
+type HTTPBody: record
 {
     content_length: count;      # Value from the CONTENT-LENGTH header.
     size: count;                # Current size of accumulated body.
@@ -46,14 +46,14 @@ type http_body: record
 const facebook_log = open_log_file("facebook") &redef;
 
 # If a HTTP body spans multiple events, this buffer accumulates the chunks.
-global bodies: table[conn_id] of http_body;
+global bodies: table[conn_id] of HTTPBody;
 
 # Chats index by HTTP session ID.
-global chats: table[conn_id] of chat_session;
+global chats: table[conn_id] of ChatSession;
 
-function new_chat_session() : chat_session
+function new_chat_session() : ChatSession
 {
-    local s: chat_session;
+    local s: ChatSession;
 
     s$start = network_time();
     s$end = s$start;
@@ -62,9 +62,9 @@ function new_chat_session() : chat_session
     return s;
 }
 
-function new_http_body() : http_body
+function new_http_body() : HTTPBody
 {
-    local body: http_body;
+    local body: HTTPBody;
 
     body$size = 0;
     body$data = "";
@@ -79,9 +79,9 @@ function extract_quoted(str: string) : string
     return split(q, /\"/)[2];
 }
 
-function parse_fb_message(data: string) : chat_message
+function parse_fb_message(data: string) : ChatMessage
 {
-    local msg: chat_message;
+    local msg: ChatMessage;
 
     local array = split(data, /,\"/);     # "
     for (i in array)
@@ -100,7 +100,7 @@ function parse_fb_message(data: string) : chat_message
     return msg;
 }
 
-function report_message(c: connection, msg: chat_message)
+function report_message(c: connection, msg: ChatMessage)
 {
     local format = "%s (%s -> %s) %s";
     local message = fmt(format, msg$timestamp, msg$from, msg$to, msg$text);
@@ -137,7 +137,8 @@ event http_header(c: connection, is_orig: bool, name: string, value: string)
 }
 
 # Reassemble the HTTP body of replies and look for Facebook chat messages.
-event http_entity_data(c: connection, is_orig: bool, length: count, data: string)
+event http_entity_data(c: connection, is_orig: bool, length: count,
+        data: string)
 {
     local id = c$id;
     if (id !in bodies)
