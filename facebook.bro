@@ -54,7 +54,7 @@ event bro_init()
 	Log::create_stream(Facebook::LOG, [$columns=Info, $ev=log_facebook]);
 	}
 
-## Extract text between two quotes.
+## Extract text between two double-quotes.
 function extract_quoted(str: string) : string
     {
     local q = find_last(str, /\"([^\"]|\\\")*\"$/);     # "
@@ -86,7 +86,7 @@ function parse_fb_message(data: string) : ChatMessage
 ## Reassemble the HTTP body of replies and look for Facebook chat messages.
 event http_body(c: connection, is_orig: bool, data: string, size: count)
     {
-    # Hackish heuristic that indicates we're dealing with a chat message.
+    # Only consider chat messages for now.
     if (/^for \(;;\);\{\"t\":\"msg\".*text\":\"/ !in data)  #"
         return;
 
