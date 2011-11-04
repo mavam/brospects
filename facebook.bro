@@ -54,11 +54,19 @@ event bro_init()
 	Log::create_stream(Facebook::LOG, [$columns=Info, $ev=log_facebook]);
 	}
 
-## Extract text between two double-quotes.
-function extract_quoted(str: string) : string
+## Extract integer (or quoted string) value from a key:value (or key:"value").
+function extract_value(str: string) : string
     {
-    local q = find_last(str, /\"([^\"]|\\\")*\"$/);     # "
-    return split(q, /\"/)[2];                           # "
+    local s = split1(str, /:/)[2];
+    s = sub(s, /^\"/, "");          #"
+    return sub(s, /\"$/, "");       #"
+    }
+
+## Extract text between the last two two double quotes.
+function extract_last_quoted(str: string) : string
+    {
+    local q = find_last(str, /\"([^\"]|\\\")*\"/);     # "
+    return split(q, /\"/)[2];                          # "
     }
 
 ## Create a webchat message from JSON data.
@@ -71,13 +79,13 @@ function parse_fb_message(data: string) : ChatMessage
         {
         local val = array[i];
         if ( strstr(val, "time\":") > 0 )
-            msg$timestamp = find_last(val, /[0-9]{13}/);
+            msg$timestamp = extract_value(val);
         else if ( strstr(val, "from_name\":\"") > 0 )
-            msg$from = extract_quoted(val);
+            msg$from = extract_value(val);
         else if ( strstr(val, "to_name\":\"") > 0 )
-            msg$to = extract_quoted(val);
+            msg$to = extract_value(val);
         else if ( strstr(val, "\"msg\":{\"text\":\"") > 0 )
-            msg$text = extract_quoted(val);
+            msg$text = extract_last_quoted(val);
         }
 
     return msg;
