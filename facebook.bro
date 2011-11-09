@@ -23,7 +23,6 @@ module Facebook;
 export {
     redef enum Log::ID += { LOG };
 
-    ## Describes the per-connection
     type Info: record {
         timestamp: string   &log;
         chat_from: string   &log;
@@ -92,13 +91,13 @@ function parse_fb_message(data: string) : ChatMessage
     }
 
 ## Reassemble the HTTP body of replies and look for Facebook chat messages.
-event http_body(c: connection, is_orig: bool, data: string, size: count)
+event http_body_complete(c: connection)
     {
     # Only consider chat messages for now.
-    if (/^for \(;;\);\{\"t\":\"msg\".*text\":\"/ !in data)  #"
+    if (/^for \(;;\);\{\"t\":\"msg\".*text\":\"/ !in c$http$body)  #"
         return;
 
-    local msg = parse_fb_message(data);
+    local msg = parse_fb_message(c$http$body);
 
     local i: Info;
     i$timestamp = msg$timestamp;
