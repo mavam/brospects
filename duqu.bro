@@ -3,10 +3,10 @@
 module HTTP;
 
 export {
-	redef enum Notice::Type += {
-		## Indicates that we might have witnessed a Duqu infection
-	    Potential_Duqu_Infection
-	};
+    redef enum Notice::Type += {
+        ## Indicates that we might have witnessed a Duqu infection
+        Potential_Duqu_Infection
+    };
 
     redef record Info += {
         cookie: string &optional;
@@ -45,7 +45,7 @@ event http_request(c: connection, method: string, original_URI: string,
         duqus[c$id$orig_h] = GIF_REQUEST;
 
     if ( method == "POST" &&
-         c$id$orig_h in duqus && 
+         c$id$orig_h in duqus &&
          duqus[c$id$orig_h] == GIF_REPLY &&
          /^PHPSESSIONID=[[:alnum]]+$/ in c$http$cookie &&
         /([0-9]+){3}\.[0-9]/ in c$http$host &&
@@ -61,32 +61,32 @@ event http_request(c: connection, method: string, original_URI: string,
     }
 
 event http_reply(c: connection, version: string, code: count, reason: string)
-	{
-	if ( c$id$orig_h in duqus && 
-	     duqus[c$id$orig_h] == GIF_REQUEST &&
-	     version == "HTTP/1.1" && 
-	     code == 200 &&
-	     c$http$content_type == "image/gif" )
-	   {
-	   duqus[c$id$orig_h] = GIF_REPLY;
+    {
+    if ( c$id$orig_h in duqus &&
+         duqus[c$id$orig_h] == GIF_REQUEST &&
+         version == "HTTP/1.1" &&
+         code == 200 &&
+         c$http$content_type == "image/gif" )
+       {
+       duqus[c$id$orig_h] = GIF_REPLY;
        NOTICE([$note=Potential_Duqu_Infection,
                $msg="Duqu GIF Acknowledgement",
                $conn=c,
                $identifier=cat(c$id$orig_h,duqus[c$id$orig_h])]);
-	   }
+       }
 
-	if ( c$id$orig_h in duqus && 
-	     duqus[c$id$orig_h] == JPEG_REQUEST &&
-	     version == "HTTP/1.1" && 
-	     code == 200 &&
-	     c$http$response_body_len == 0 )
-	   {
-	   duqus[c$id$orig_h] = JPEG_REPLY;
+    if ( c$id$orig_h in duqus &&
+         duqus[c$id$orig_h] == JPEG_REQUEST &&
+         version == "HTTP/1.1" &&
+         code == 200 &&
+         c$http$response_body_len == 0 )
+       {
+       duqus[c$id$orig_h] = JPEG_REPLY;
        NOTICE([$note=Potential_Duqu_Infection,
                $msg="Duqu JPEG Acknowledgement",
                $conn=c,
                $identifier=cat(c$id$orig_h,duqus[c$id$orig_h])]);
 
-	   delete duqus[c$id$orig_h];
-	   }
-	}
+       delete duqus[c$id$orig_h];
+       }
+    }
