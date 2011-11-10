@@ -16,15 +16,25 @@ contents. Concretely, it reassembles the current request and/or response body
 via the `http_entity_{begin,data,end}` events and raises the new event
 `http_body` which has the following signature:
 
-    http_body: event(c: connection, is_orig: bool, data: string, size: count);
+    http_body_complete: event(c: connection);
 
-As with all Bro HTTP scripts, `is_orig` differentiates requests from replies.
-The field `data` contains the body and `size` holds the body length in bytes.
+Upon handling `http_body_complete`, you can be sure that `c$http$body` contains
+the full string of the HTTP response unless the body exceeds
+`HTTP::max_body_size` bytes, in which case the body is chopped off at that
+size.
 
-Because the keeping track of all HTTP bodies would likely exceed the
-amount of available memory, we need to focus of a subset of HTTP message
-bodies. The script offers the following variables in the namespace `HTTP` to do
-so:
+Aside from `c$http$body`, this script adds a second field to `c$http` named
+`reassembl_body` which determines whether the current connection should
+reassemble the body. For example, if you observe some suspicious header value,
+you could set `c$http$reassembl_body = T` and hand the `http_body_complete`
+event. Note that this flag is *per connection* and not per HTTP message, which
+means you would need to turn it off after handling `http_body_complete` if you
+wanted body reassembly at the HTTP message level.
+
+Because the keeping track of all HTTP bodies would likely exceed the amount of
+available memory, we need to focus of a subset of HTTP message bodies. The
+script offers the following variables in the HTTP namespace in addition to
+`c$http$reassembl_body`:
 
     ## Flag that indicates whether to hook request bodies.
     const hook_request_bodies = F &redef;
@@ -44,7 +54,9 @@ facebook.bro
 ------------
 
 This script analyses Facebook webchat sessions and extracts messages between
-two conversing buddies. [My blog][fb-chat-post] contains a bit more details
-about this script.
+two conversing buddies; it creates a file `facebook.log`.
+[My blog][fb-chat-post] contains a bit more details about this script.
+
+Requires Bro 2.x
 
 [fb-chat-post]: http://matthias.vallentin.net/blog/2011/06/analyzing-facebook-webchat-sessions-with-bro/
