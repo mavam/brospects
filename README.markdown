@@ -1,8 +1,11 @@
 This repository is a mixed bag of Bro scripts that are too specific to be
-included in the official [Bro scripts
-repository](http://git.bro-ids.org/bro-scripts.git). The scripts are
-of expirimental nature and might have a few edges, so you are welcome to ping
-me for feedback and clarifications.
+included in the official
+[Bro scripts repository](http://git.bro-ids.org/bro-scripts.git).
+The scripts are of expirimental nature and might have a few edges, so you are
+welcome to ping me for feedback and clarifications.
+
+The repository contains Bro scripts in the directory `bro` and awk scripts for
+post-processing the logs in `awk`.
 
 Please see the file `COPYING` for the licence details.
 
