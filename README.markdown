@@ -52,14 +52,3 @@ script offers the following variables in the HTTP namespace in addition to
     const max_body_size = 50000000;
 
 Requires Bro 2.x
-
-facebook.bro
-------------
-
-This script analyses Facebook webchat sessions and extracts messages between
-two conversing buddies; it creates a file `facebook.log`.
-[My blog][fb-chat-post] contains a bit more details about this script.
-
-Requires Bro 2.x
-
-[fb-chat-post]: http://matthias.vallentin.net/blog/2011/06/analyzing-facebook-webchat-sessions-with-bro/
